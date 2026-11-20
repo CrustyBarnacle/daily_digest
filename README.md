@@ -21,6 +21,8 @@ Google's official OAuth/API client libraries (`google-auth`,
 token refresh isn't worth the security risk, so that's the one deliberate
 exception to "standard libs where possible."
 
+![morning_digest dashboard mockup](dashboard_mock.png)
+
 ## Setup
 
 1. Install the Google client libraries:
