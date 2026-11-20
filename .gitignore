@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+
+# Local Python virtualenvs used to test-run this project
+.daily_summary/
+venv/
+.venv/
+
+# Your real podcast subscriptions -- cybersec_example.opml is the tracked sample
+podcasts.opml

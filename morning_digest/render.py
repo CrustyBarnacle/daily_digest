@@ -1,0 +1,103 @@
+"""Assemble section markdown into one digest, and render a card-based dashboard HTML view.
+
+Styling itself lives entirely in static/digest.css (shipped as the default,
+copied into the state dir on first run only) -- this module only emits the
+.dashboard/.card/h1/h2 markup those rules target, so a hand-written
+stylesheet can be dropped in without touching any Python.
+"""
+import html
+import re
+from datetime import datetime
+from pathlib import Path
+
+SECTION_ORDER = ["schedule", "email", "briefing", "news", "podcasts", "weather"]
+SECTION_TITLES = {
+    "schedule": "Today's Schedule",
+    "email": "Urgent / Unread Email",
+    "briefing": "Today's Briefing",
+    "news": "IT & Cybersec News",
+    "podcasts": "New Podcast Episodes",
+    "weather": "Weather",
+}
+
+STYLE_FILENAME = "digest.css"
+DEFAULT_STYLE_PATH = Path(__file__).resolve().parent / "static" / STYLE_FILENAME
+
+
+def assemble_markdown(sections: dict) -> str:
+    today = datetime.now().strftime("%A, %B %d %Y")
+    parts = [f"# Morning Digest — {today}\n"]
+    for key in SECTION_ORDER:
+        if key not in sections:
+            continue
+        parts.append(f"## {SECTION_TITLES.get(key, key.title())}\n")
+        parts.append(sections[key].rstrip() + "\n")
+    return "\n".join(parts) + "\n"
+
+
+# Minimal stdlib-only Markdown -> HTML for the handful of constructs we
+# actually emit (bullets, bold, italics, links, code fences). Not a
+# general-purpose parser; good enough for this digest's own output.
+def _inline(text: str) -> str:
+    text = html.escape(text)
+    text = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r'<a href="\2">\1</a>', text)
+    text = re.sub(r"\*\*([^*]+)\*\*", r"<b>\1</b>", text)
+    text = re.sub(r"_([^_]+)_", r"<i>\1</i>", text)
+    return text
+
+
+def _section_fragment(md_text: str) -> str:
+    """Convert one section's markdown body (no heading line) to an HTML fragment."""
+    lines = md_text.splitlines()
+    out = []
+    in_code = False
+    in_list = False
+    for line in lines:
+        if line.strip().startswith("```"):
+            out.append("</pre>" if in_code else "<pre>")
+            in_code = not in_code
+            continue
+        if in_code:
+            out.append(html.escape(line))
+            continue
+        if line.startswith("- "):
+            if not in_list:
+                out.append("<ul>")
+                in_list = True
+            out.append(f"<li>{_inline(line[2:])}</li>")
+            continue
+        if in_list:
+            out.append("</ul>")
+            in_list = False
+        if line.strip():
+            out.append(f"<p>{_inline(line)}</p>")
+    if in_list:
+        out.append("</ul>")
+    return "\n".join(out)
+
+
+def render_html(sections: dict) -> str:
+    today = datetime.now().strftime("%A, %B %d %Y")
+    cards = []
+    for key in SECTION_ORDER:
+        if key not in sections:
+            continue
+        title = html.escape(SECTION_TITLES.get(key, key.title()))
+        body = _section_fragment(sections[key])
+        cards.append(f'<div class="card" id="{key}">\n<h2>{title}</h2>\n{body}\n</div>')
+    dashboard = "\n".join(cards)
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Morning Digest</title>
+<link rel="stylesheet" href="{STYLE_FILENAME}">
+</head>
+<body>
+<h1>Morning Digest — {today}</h1>
+<div class="dashboard">
+{dashboard}
+</div>
+</body>
+</html>
+"""

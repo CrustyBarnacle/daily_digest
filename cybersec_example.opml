@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opml version="2.0">
+  <head>
+    <title>Podcasts and Authors</title>
+  </head>
+  <body>
+    <outline text="Cory Doctorow (Craphound)" title="Cory Doctorow (Craphound)" type="rss" xmlUrl="https://craphound.com/feed/" htmlUrl="https://craphound.com/podcast/"/>
+    <outline text="EFF — How to Fix the Internet" title="EFF — How to Fix the Internet" type="rss" xmlUrl="https://feeds.eff.org/howtofixtheinternet" htmlUrl="https://www.eff.org/how-to-fix-the-internet-podcast"/>
+    <outline text="You're Wrong About" title="You're Wrong About" type="rss" xmlUrl="https://feeds.megaphone.fm/AIL6181579533" htmlUrl="https://yourewrongabout.com/"/>
+    <outline text="Daniel Miessler — Unsupervised Learning" title="Daniel Miessler — Unsupervised Learning" type="rss" xmlUrl="https://rss.beehiiv.com/feeds/gQxaV1KHkQ.xml" htmlUrl="https://danielmiessler.com/podcast"/>
+    <outline text="Darknet Diaries" title="Darknet Diaries" type="rss" xmlUrl="https://feeds.megaphone.fm/darknetdiaries" htmlUrl="https://darknetdiaries.com/episode/"/>
+  </body>
+</opml>
+
