@@ -16,7 +16,7 @@ SECTION_TITLES = {
     "email": "Urgent / Unread Email",
     "briefing": "Today's Briefing",
     "news": "IT & Cybersec News",
-    "podcasts": "New Podcast Episodes",
+    "podcasts": "Recent Podcast Episodes",
     "weather": "Weather",
 }
 

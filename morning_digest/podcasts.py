@@ -12,6 +12,7 @@ class Episode:
     title: str
     link: str
     guid: str
+    is_new: bool = False
 
 
 def _fetch(url: str, timeout: int) -> bytes:
@@ -50,41 +51,43 @@ def _latest_items(url: str, limit: int, timeout: int) -> list:
     return items
 
 
-def find_new_episodes(opml_path=None, seen_path=None, per_feed=None, timeout=None) -> list:
+def find_recent_episodes(opml_path=None, seen_path=None, per_feed=None, timeout=None) -> list:
+    """Latest `per_feed` episodes from every subscribed show, every run --
+    always something to show, with `is_new` marking ones not seen last run."""
     opml_path = opml_path or config.PODCAST_OPML
     seen_path = seen_path or config.PODCAST_SEEN_FILE
     per_feed = per_feed or config.PODCAST_NEW_EPISODES_PER_FEED
     timeout = timeout or config.FETCH_TIMEOUT
 
     seen = state.load(seen_path, default={})
-    new_episodes = []
+    episodes = []
 
     for title, url in parse_opml(opml_path):
         seen_guids = set(seen.get(url, []))
         latest = _latest_items(url, per_feed, timeout)
         fresh_guids = []
         for ep_title, link, guid in latest:
-            if guid not in seen_guids:
-                new_episodes.append(Episode(title, ep_title, link, guid))
+            episodes.append(Episode(title, ep_title, link, guid, is_new=guid not in seen_guids))
             fresh_guids.append(guid)
-        # Remember the guids we've now surfaced so next run doesn't repeat them.
+        # Remember the guids we've now surfaced so next run can mark them seen.
         seen[url] = fresh_guids
 
     state.save(seen_path, seen)
-    return new_episodes
+    return episodes
 
 
 def render_markdown(episodes) -> str:
     if not episodes:
-        return "_No new episodes._\n"
+        return "_No episodes found._\n"
     lines = []
     for ep in episodes:
+        marker = " 🆕" if ep.is_new else ""
         if ep.link:
-            lines.append(f"- **{ep.podcast}**: [{ep.title}]({ep.link})")
+            lines.append(f"- **{ep.podcast}**: [{ep.title}]({ep.link}){marker}")
         else:
-            lines.append(f"- **{ep.podcast}**: {ep.title}")
+            lines.append(f"- **{ep.podcast}**: {ep.title}{marker}")
     return "\n".join(lines) + "\n"
 
 
 if __name__ == "__main__":
-    print(render_markdown(find_new_episodes()))
+    print(render_markdown(find_recent_episodes()))
