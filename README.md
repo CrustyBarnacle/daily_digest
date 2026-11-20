@@ -25,9 +25,16 @@ exception to "standard libs where possible."
 
 ## Setup
 
-1. Install the Google client libraries:
+1. Create a virtualenv and install the Google client libraries:
    ```
+   python3 -m venv .venv && source .venv/bin/activate
    pip install -r requirements.txt
+   ```
+   or, if you use `uv` (also needs an active venv — `uv pip install` is a
+   pip drop-in, not a project manager, so it won't create one for you):
+   ```
+   uv venv && source .venv/bin/activate
+   uv pip install -r requirements.txt
    ```
 
 2. Create a Google OAuth client:
