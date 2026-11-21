@@ -47,6 +47,10 @@ def _latest_items(url: str, limit: int, timeout: int) -> list:
         title = (item.findtext("title") or "").strip()
         link = (item.findtext("link") or "").strip()
         guid = (item.findtext("guid") or link or title).strip()
+        # Some feeds (e.g. Megaphone) omit <link> and only put the episode
+        # URL in <guid isPermaLink="true">; fall back to it when it's a URL.
+        if not link and guid.startswith(("http://", "https://")):
+            link = guid
         items.append((title, link, guid))
     return items
 
