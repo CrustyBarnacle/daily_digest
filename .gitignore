@@ -8,3 +8,9 @@ venv/
 
 # Your real podcast subscriptions -- cybersec_example.opml is the tracked sample
 podcasts.opml
+
+# Google OAuth client + token -- these should only ever live in
+# ~/.local/state/morning-digest/, never in the project tree, but ignore them
+# at any depth as a safety net in case config.py's paths ever get pointed here
+credentials.json
+token.json
