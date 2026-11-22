@@ -51,6 +51,13 @@ def _latest_items(url: str, limit: int, timeout: int) -> list:
         # URL in <guid isPermaLink="true">; fall back to it when it's a URL.
         if not link and guid.startswith(("http://", "https://")):
             link = guid
+        # Some feeds have no episode webpage at all (guid is an opaque id,
+        # not a URL) -- fall back to the audio file itself so there's still
+        # something episode-specific to link to.
+        if not link:
+            enclosure = item.find("enclosure")
+            if enclosure is not None:
+                link = (enclosure.get("url") or "").strip()
         items.append((title, link, guid))
     return items
 
