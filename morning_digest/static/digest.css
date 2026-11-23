@@ -20,6 +20,8 @@ a { color: #79c0ff; }
 }
 
 .card {
+  display: flex;
+  flex-direction: column;
   padding: 20px;
   border: 1px solid #30363d;
   border-radius: 12px;
@@ -37,6 +39,16 @@ a { color: #79c0ff; }
   font-size: 1.1rem;
   border-bottom: 1px solid #30363d;
   padding-bottom: 0.5rem;
+}
+
+/* Cards marked .scroll cap their own height and scroll their body
+   internally, instead of stretching the whole grid row to match them. */
+.card.scroll {
+  max-height: 60vh;
+}
+
+.card.scroll .card-body {
+  overflow-y: auto;
 }
 
 .card ul { margin: 0.5rem 0; padding-left: 1.25rem; }

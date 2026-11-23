@@ -2,7 +2,7 @@
 
 Styling itself lives entirely in static/digest.css (shipped as the default,
 copied into the state dir on first run only) -- this module only emits the
-.dashboard/.card/h1/h2 markup those rules target, so a hand-written
+.dashboard/.card/.card-body/h1/h2 markup those rules target, so a hand-written
 stylesheet can be dropped in without touching any Python.
 """
 import html
@@ -19,6 +19,9 @@ SECTION_TITLES = {
     "podcasts": "Recent Podcast Episodes",
     "weather": "Weather",
 }
+# Sections whose content can grow long enough to need their own scrollbar
+# rather than stretching the whole dashboard row to match their height.
+SECTION_SCROLLABLE = {"email"}
 
 STYLE_FILENAME = "digest.css"
 DEFAULT_STYLE_PATH = Path(__file__).resolve().parent / "static" / STYLE_FILENAME
@@ -84,7 +87,11 @@ def render_html(sections: dict) -> str:
             continue
         title = html.escape(SECTION_TITLES.get(key, key.title()))
         body = _section_fragment(sections[key])
-        cards.append(f'<div class="card" id="{key}">\n<h2>{title}</h2>\n{body}\n</div>')
+        card_class = "card scroll" if key in SECTION_SCROLLABLE else "card"
+        cards.append(
+            f'<div class="{card_class}" id="{key}">\n<h2>{title}</h2>\n'
+            f'<div class="card-body">\n{body}\n</div>\n</div>'
+        )
     dashboard = "\n".join(cards)
     return f"""<!doctype html>
 <html lang="en">
