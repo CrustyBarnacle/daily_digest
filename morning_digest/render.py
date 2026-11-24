@@ -10,18 +10,19 @@ import re
 from datetime import datetime
 from pathlib import Path
 
-SECTION_ORDER = ["schedule", "email", "briefing", "news", "podcasts", "weather"]
+SECTION_ORDER = ["schedule", "briefing", "news", "podcasts", "email"]
 SECTION_TITLES = {
-    "schedule": "Today's Schedule",
+    "schedule": "Today's Schedule & Weather",
     "email": "Urgent / Unread Email",
     "briefing": "Today's Briefing",
     "news": "IT & Cybersec News",
     "podcasts": "Recent Podcast Episodes",
-    "weather": "Weather",
 }
 # Sections whose content can grow long enough to need their own scrollbar
 # rather than stretching the whole dashboard row to match their height.
 SECTION_SCROLLABLE = {"email"}
+# Cards that should span the full dashboard width instead of sitting in the grid.
+SECTION_FULL_WIDTH = {"email"}
 
 STYLE_FILENAME = "digest.css"
 DEFAULT_STYLE_PATH = Path(__file__).resolve().parent / "static" / STYLE_FILENAME
@@ -35,6 +36,9 @@ def assemble_markdown(sections: dict) -> str:
             continue
         parts.append(f"## {SECTION_TITLES.get(key, key.title())}\n")
         parts.append(sections[key].rstrip() + "\n")
+        if key == "schedule" and "schedule_forecast" in sections:
+            parts.append("**Upcoming forecast**\n")
+            parts.append(sections["schedule_forecast"].rstrip() + "\n")
     return "\n".join(parts) + "\n"
 
 
@@ -87,9 +91,19 @@ def render_html(sections: dict) -> str:
             continue
         title = html.escape(SECTION_TITLES.get(key, key.title()))
         body = _section_fragment(sections[key])
-        card_class = "card scroll" if key in SECTION_SCROLLABLE else "card"
+        if key == "schedule" and "schedule_forecast" in sections:
+            forecast_body = _section_fragment(sections["schedule_forecast"])
+            body += (
+                '\n<details class="forecast"><summary>Upcoming forecast</summary>\n'
+                f'{forecast_body}\n</details>'
+            )
+        classes = ["card"]
+        if key in SECTION_SCROLLABLE:
+            classes.append("scroll")
+        if key in SECTION_FULL_WIDTH:
+            classes.append("full-width")
         cards.append(
-            f'<div class="{card_class}" id="{key}">\n<h2>{title}</h2>\n'
+            f'<div class="{" ".join(classes)}" id="{key}">\n<h2>{title}</h2>\n'
             f'<div class="card-body">\n{body}\n</div>\n</div>'
         )
     dashboard = "\n".join(cards)

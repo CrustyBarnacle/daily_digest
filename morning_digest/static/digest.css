@@ -55,6 +55,27 @@ a { color: #79c0ff; }
 .card li { margin: 0.25rem 0; }
 .card p { margin: 0.5rem 0; }
 
+/* Email card sits alone, full-width, in the last row. */
+.card.full-width {
+  grid-column: 1 / -1;
+}
+
+/* Click-to-expand multi-day forecast inside the schedule card. */
+.card details.forecast {
+  margin-top: 0.75rem;
+  border-top: 1px solid #30363d;
+  padding-top: 0.5rem;
+}
+
+.card details.forecast summary {
+  cursor: pointer;
+  color: #58a6ff;
+}
+
+.card details.forecast ul {
+  margin-top: 0.5rem;
+}
+
 .card pre {
   background: #0d1117;
   padding: 0.75rem 1rem;

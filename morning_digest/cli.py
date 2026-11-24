@@ -22,13 +22,17 @@ def build_sections() -> dict:
     headlines = news.fetch_all()
     episodes = podcasts.find_recent_episodes()
 
+    schedule_md = schedule.render_markdown(events).rstrip() + "\n\n" + weather.render_markdown()
+    forecast_days = weather.fetch_forecast()
+
     sections = {
-        "schedule": schedule.render_markdown(events),
+        "schedule": schedule_md,
         "email": email_section.render_markdown(emails),
         "news": news.render_markdown(headlines),
         "podcasts": podcasts.render_markdown(episodes),
-        "weather": weather.render_markdown(),
     }
+    if forecast_days:
+        sections["schedule_forecast"] = "\n".join(f"- {line}" for line in forecast_days) + "\n"
 
     if config.ENABLE_LLM_NEWS_SUMMARY:
         briefing = news.llm_briefing(headlines)
