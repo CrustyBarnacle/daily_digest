@@ -21,7 +21,7 @@ EMAIL_JSON = STATE_DIR / "email.json"
 CALENDAR_JSON = STATE_DIR / "calendar.json"
 
 # --- Local LLM (Lemonade serving Llama3, OpenAI-compatible endpoint) ---
-LEMONADE_BASE_URL = "http://localhost:8000"
+LEMONADE_BASE_URL = "http://localhost:13305"
 LEMONADE_MODEL = "llama3"
 LLM_TIMEOUT = 30
 # If the LLM enrichment steps below fail/time out, sections fall back to the
@@ -57,9 +57,12 @@ PODCAST_NEW_EPISODES_PER_FEED = 2
 # https://github.com/CrustyBarnacle/Utility_Scripts/blob/main/weather
 # Install it somewhere on PATH (or point WEATHER_CMD at its full path), then
 # set your location with -l/--lat, --lon, -n/--name (defaults to LA if unset).
-# "-f summary" renders a boxed multi-line summary; swap to "oneline" for a
-# single compact line if a card feels too busy.
-WEATHER_CMD = ["weather", "-f", "notification"]
+# Base invocation only -- weather.py appends "-f <mode>" per call
+# ("notification" for the current-conditions line, "json" for the raw NWS
+# forecast periods used to build the multi-day popover).
+WEATHER_CMD = ["weather"]
+# How many upcoming daytime periods to show in the forecast popover (3-5).
+WEATHER_FORECAST_DAYS = 3
 
 FETCH_TIMEOUT = 10
 
