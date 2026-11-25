@@ -58,6 +58,7 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
 
     config.STATE_DIR.mkdir(parents=True, exist_ok=True)
+    config.DATA_DIR.mkdir(parents=True, exist_ok=True)
     sections = build_sections()
     md = render.assemble_markdown(sections)
     config.DIGEST_MD.write_text(md, encoding="utf-8")
@@ -77,7 +78,7 @@ def main(argv=None) -> int:
 
     if args.serve:
         handler = functools.partial(
-            http.server.SimpleHTTPRequestHandler, directory=str(config.STATE_DIR)
+            http.server.SimpleHTTPRequestHandler, directory=str(config.DATA_DIR)
         )
         url = f"http://127.0.0.1:{args.port}/{config.DIGEST_HTML.name}"
         socketserver.TCPServer.allow_reuse_address = True

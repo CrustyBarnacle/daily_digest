@@ -2,6 +2,11 @@
 from pathlib import Path
 
 STATE_DIR = Path.home() / ".local" / "state" / "morning-digest"
+# User-facing generated output (the digest itself) lives separately from
+# STATE_DIR, which holds credentials/tokens/cached-fetch JSON -- keeps the
+# --serve HTTP server (which serves this whole directory) from also exposing
+# secrets, and follows XDG: state vs. share.
+DATA_DIR = Path.home() / ".local" / "share" / "morning-digest"
 
 # --- Google OAuth (Gmail + Calendar) ---
 # Create an OAuth client ID (type "Desktop app") in Google Cloud Console,
@@ -67,6 +72,6 @@ WEATHER_FORECAST_DAYS = 3
 FETCH_TIMEOUT = 10
 
 # --- Output ---
-DIGEST_MD = STATE_DIR / "digest.md"
-DIGEST_HTML = STATE_DIR / "digest.html"
-DIGEST_CSS = STATE_DIR / "digest.css"
+DIGEST_MD = DATA_DIR / "digest.md"
+DIGEST_HTML = DATA_DIR / "digest.html"
+DIGEST_CSS = DATA_DIR / "digest.css"
