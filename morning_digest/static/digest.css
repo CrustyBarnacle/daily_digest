@@ -55,9 +55,9 @@ a { color: #79c0ff; }
 .card li { margin: 0.25rem 0; }
 .card p { margin: 0.5rem 0; }
 
-/* Email card sits alone, full-width, in the last row. */
-.card.full-width {
-  grid-column: 1 / -1;
+/* Email card spans two columns, so it can share its row with another card. */
+.card.wide {
+  grid-column: span 2;
 }
 
 /* Click-to-expand multi-day forecast inside the schedule card. */

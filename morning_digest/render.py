@@ -10,7 +10,7 @@ import re
 from datetime import datetime
 from pathlib import Path
 
-SECTION_ORDER = ["schedule", "briefing", "news", "podcasts", "email"]
+SECTION_ORDER = ["schedule", "news", "podcasts", "email", "briefing"]
 SECTION_TITLES = {
     "schedule": "Today's Schedule & Weather",
     "email": "Urgent / Unread Email",
@@ -21,8 +21,8 @@ SECTION_TITLES = {
 # Sections whose content can grow long enough to need their own scrollbar
 # rather than stretching the whole dashboard row to match their height.
 SECTION_SCROLLABLE = {"email"}
-# Cards that should span the full dashboard width instead of sitting in the grid.
-SECTION_FULL_WIDTH = {"email"}
+# Cards that should span two grid columns instead of sitting in a single one.
+SECTION_WIDE = {"email"}
 
 STYLE_FILENAME = "digest.css"
 DEFAULT_STYLE_PATH = Path(__file__).resolve().parent / "static" / STYLE_FILENAME
@@ -100,8 +100,8 @@ def render_html(sections: dict) -> str:
         classes = ["card"]
         if key in SECTION_SCROLLABLE:
             classes.append("scroll")
-        if key in SECTION_FULL_WIDTH:
-            classes.append("full-width")
+        if key in SECTION_WIDE:
+            classes.append("wide")
         cards.append(
             f'<div class="{" ".join(classes)}" id="{key}">\n<h2>{title}</h2>\n'
             f'<div class="card-body">\n{body}\n</div>\n</div>'
