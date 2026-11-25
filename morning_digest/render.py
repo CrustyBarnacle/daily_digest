@@ -2,7 +2,7 @@
 
 Styling itself lives entirely in static/digest.css (shipped as the default,
 copied into the state dir on first run only) -- this module only emits the
-.dashboard/.card/h1/h2 markup those rules target, so a hand-written
+.dashboard/.card/.card-body/h1/h2 markup those rules target, so a hand-written
 stylesheet can be dropped in without touching any Python.
 """
 import html
@@ -10,15 +10,19 @@ import re
 from datetime import datetime
 from pathlib import Path
 
-SECTION_ORDER = ["schedule", "email", "briefing", "news", "podcasts", "weather"]
+SECTION_ORDER = ["schedule", "news", "podcasts", "email", "briefing"]
 SECTION_TITLES = {
-    "schedule": "Today's Schedule",
+    "schedule": "Today's Schedule & Weather",
     "email": "Urgent / Unread Email",
     "briefing": "Today's Briefing",
     "news": "IT & Cybersec News",
     "podcasts": "Recent Podcast Episodes",
-    "weather": "Weather",
 }
+# Sections whose content can grow long enough to need their own scrollbar
+# rather than stretching the whole dashboard row to match their height.
+SECTION_SCROLLABLE = {"email"}
+# Cards that should span two grid columns instead of sitting in a single one.
+SECTION_WIDE = {"email"}
 
 STYLE_FILENAME = "digest.css"
 DEFAULT_STYLE_PATH = Path(__file__).resolve().parent / "static" / STYLE_FILENAME
@@ -32,6 +36,9 @@ def assemble_markdown(sections: dict) -> str:
             continue
         parts.append(f"## {SECTION_TITLES.get(key, key.title())}\n")
         parts.append(sections[key].rstrip() + "\n")
+        if key == "schedule" and "schedule_forecast" in sections:
+            parts.append("**Upcoming forecast**\n")
+            parts.append(sections["schedule_forecast"].rstrip() + "\n")
     return "\n".join(parts) + "\n"
 
 
@@ -84,7 +91,21 @@ def render_html(sections: dict) -> str:
             continue
         title = html.escape(SECTION_TITLES.get(key, key.title()))
         body = _section_fragment(sections[key])
-        cards.append(f'<div class="card" id="{key}">\n<h2>{title}</h2>\n{body}\n</div>')
+        if key == "schedule" and "schedule_forecast" in sections:
+            forecast_body = _section_fragment(sections["schedule_forecast"])
+            body += (
+                '\n<details class="forecast"><summary>Upcoming forecast</summary>\n'
+                f'{forecast_body}\n</details>'
+            )
+        classes = ["card"]
+        if key in SECTION_SCROLLABLE:
+            classes.append("scroll")
+        if key in SECTION_WIDE:
+            classes.append("wide")
+        cards.append(
+            f'<div class="{" ".join(classes)}" id="{key}">\n<h2>{title}</h2>\n'
+            f'<div class="card-body">\n{body}\n</div>\n</div>'
+        )
     dashboard = "\n".join(cards)
     return f"""<!doctype html>
 <html lang="en">

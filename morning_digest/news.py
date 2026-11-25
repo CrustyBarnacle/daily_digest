@@ -1,4 +1,5 @@
 """Fetch and summarize IT/cybersec RSS headlines using only the standard library."""
+import re
 import urllib.request
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
@@ -7,6 +8,14 @@ from email.utils import parsedate_to_datetime
 from . import config
 
 ATOM_NS = "{http://www.w3.org/2005/Atom}"
+_TAG_RE = re.compile(r"<[^>]+>")
+
+
+def _clean_description(raw: str, limit: int = 300) -> str:
+    """Strip HTML and collapse whitespace from a feed's description/summary,
+    truncated to keep the LLM prompt small."""
+    text = " ".join(_TAG_RE.sub(" ", raw or "").split())
+    return text[:limit]
 
 
 @dataclass
@@ -15,6 +24,7 @@ class Headline:
     title: str
     link: str
     published: str  # best-effort human string, already-formatted
+    description: str = ""  # short plain-text snippet, used to ground the LLM briefing
 
 
 def _fetch(url: str, timeout: int) -> bytes:
@@ -29,7 +39,8 @@ def _parse_rss2(root) -> list:
         title = (item.findtext("title") or "").strip()
         link = (item.findtext("link") or "").strip()
         pub = (item.findtext("pubDate") or "").strip()
-        items.append((title, link, pub))
+        desc = _clean_description(item.findtext("description"))
+        items.append((title, link, pub, desc))
     return items
 
 
@@ -40,7 +51,8 @@ def _parse_atom(root) -> list:
         link_el = entry.find(f"{ATOM_NS}link")
         link = link_el.get("href") if link_el is not None else ""
         pub = (entry.findtext(f"{ATOM_NS}updated") or entry.findtext(f"{ATOM_NS}published") or "").strip()
-        items.append((title, link, pub))
+        desc = _clean_description(entry.findtext(f"{ATOM_NS}summary") or entry.findtext(f"{ATOM_NS}content"))
+        items.append((title, link, pub, desc))
     return items
 
 
@@ -60,7 +72,7 @@ def fetch_feed(name: str, url: str, limit: int, timeout: int) -> list:
 
     items = _parse_rss2(root) if root.tag != f"{ATOM_NS}feed" else _parse_atom(root)
     items.sort(key=lambda t: _sort_key(t[2]) or "", reverse=True)
-    return [Headline(name, title, link, pub) for title, link, pub in items[:limit] if title]
+    return [Headline(name, title, link, pub, desc) for title, link, pub, desc in items[:limit] if title]
 
 
 def fetch_all(feeds=None, limit=None, timeout=None) -> list:
@@ -80,17 +92,24 @@ def llm_briefing(headlines) -> str:
 
     if not headlines:
         return ""
-    titles = "\n".join(f"- {h.title}" for h in headlines if h.title and "(failed to fetch" not in h.title)
-    if not titles:
+    entries = "\n".join(
+        f"- {h.title}" + (f" :: {h.description}" if h.description else "")
+        for h in headlines if h.title and "(failed to fetch" not in h.title
+    )
+    if not entries:
         return ""
     result = llm_client.chat(
-        titles,
+        entries,
         system=(
-            "You are a cybersecurity news briefer. Given these headlines, write a "
-            "2-3 sentence plain-English summary of what's most worth knowing today. "
-            "No preamble, no markdown."
+            "You are a cybersecurity news briefer. Each line below is a headline, "
+            "optionally followed by ' :: ' and a short snippet from that article -- "
+            "use the snippet (when present) to get attribution and relationships right "
+            "instead of guessing from the headline wording alone. Write a 2-3 sentence "
+            "plain-English summary of what's most worth knowing today. Stick to what's "
+            "stated; don't speculate beyond it. No preamble, no markdown. End on a "
+            "complete sentence."
         ),
-        max_tokens=200,
+        max_tokens=280,
     )
     if result.startswith("(local LLM unavailable"):
         return ""

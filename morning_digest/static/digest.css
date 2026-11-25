@@ -20,6 +20,8 @@ a { color: #79c0ff; }
 }
 
 .card {
+  display: flex;
+  flex-direction: column;
   padding: 20px;
   border: 1px solid #30363d;
   border-radius: 12px;
@@ -39,9 +41,40 @@ a { color: #79c0ff; }
   padding-bottom: 0.5rem;
 }
 
+/* Cards marked .scroll cap their own height and scroll their body
+   internally, instead of stretching the whole grid row to match them. */
+.card.scroll {
+  max-height: 60vh;
+}
+
+.card.scroll .card-body {
+  overflow-y: auto;
+}
+
 .card ul { margin: 0.5rem 0; padding-left: 1.25rem; }
 .card li { margin: 0.25rem 0; }
 .card p { margin: 0.5rem 0; }
+
+/* Email card spans two columns, so it can share its row with another card. */
+.card.wide {
+  grid-column: span 2;
+}
+
+/* Click-to-expand multi-day forecast inside the schedule card. */
+.card details.forecast {
+  margin-top: 0.75rem;
+  border-top: 1px solid #30363d;
+  padding-top: 0.5rem;
+}
+
+.card details.forecast summary {
+  cursor: pointer;
+  color: #58a6ff;
+}
+
+.card details.forecast ul {
+  margin-top: 0.5rem;
+}
 
 .card pre {
   background: #0d1117;

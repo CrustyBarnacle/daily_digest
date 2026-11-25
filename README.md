@@ -13,7 +13,10 @@ A local-first Python framework that builds a single daily digest from:
 Everything runs standalone with `python3 -m morning_digest.cli` — no Claude
 session, no MCP connector, no cloud LLM. Output is a Markdown file (viewable
 with [`glow`](https://github.com/charmbracelet/glow)) and a minimal
-dark-themed HTML page, both written to `~/.local/state/morning-digest/`.
+dark-themed HTML page, both written to `~/.local/share/morning-digest/`
+(kept separate from `~/.local/state/morning-digest/`, which holds
+credentials/tokens/cached-fetch JSON — so `--serve`, which serves the whole
+output directory over local HTTP, never exposes secrets).
 
 Everything is stdlib-only **except** Gmail/Calendar access, which uses
 Google's official OAuth/API client libraries (`google-auth`,
@@ -48,7 +51,7 @@ exception to "standard libs where possible."
 
 3. Set up [Lemonade](https://github.com/lemonade-sdk/lemonade) locally and
    confirm it's serving Llama3 on an OpenAI-compatible endpoint
-   (default assumed: `http://localhost:8000`). If it's not reachable, the
+   (default assumed: `http://localhost:13305`). If it's not reachable, the
    digest still builds — the briefing section just gets skipped.
 
 4. Edit `morning_digest/config.py`:
@@ -95,8 +98,10 @@ morning_digest/
 .claude/skills/morning-digest/SKILL.md   Claude Code convenience wrapper
 ```
 
-State (OAuth token, podcast dedup, generated digest files) lives in
-`~/.local/state/morning-digest/`, separate from the project directory.
+State (OAuth token, podcast dedup, cached fetch JSON) lives in
+`~/.local/state/morning-digest/`; the generated digest files (Markdown/HTML/CSS)
+live in `~/.local/share/morning-digest/` — both separate from the project
+directory.
 
 ## Roadmap
 
