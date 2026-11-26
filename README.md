@@ -75,6 +75,10 @@ exception to "standard libs where possible."
    ```
    python3 -m morning_digest.cli --serve
    ```
+   Cards fill in live as each section's fetch (or the local LLM briefing)
+   finishes, instead of blocking on one render at the end — pending cards
+   show a pixel-loader placeholder and the page auto-refreshes itself
+   (plain `<meta http-equiv="refresh">`, no JS) until everything's ready.
 
 6. (Optional) In Claude Code, `/morning-digest` or asking for "my morning
    digest" runs the same thing via the `morning-digest` skill.
@@ -108,3 +112,6 @@ directory.
 - **v2.0**: optional MCP-based backend for Gmail/Calendar (useful inside a
   Claude Code session without local OAuth setup) as an alternative to the
   direct-API path above.
+- **Style**: a full pixel-retro reskin of the whole dashboard, matching the
+  pixel-loader placeholders introduced for `--serve`'s progressive load —
+  deferred until the functional async-render pieces are solid.

@@ -14,3 +14,6 @@ podcasts.opml
 # at any depth as a safety net in case config.py's paths ever get pointed here
 credentials.json
 token.json
+
+# Style and layout iteration working folder (not tracked!)
+working/

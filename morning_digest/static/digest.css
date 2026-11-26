@@ -86,3 +86,175 @@ a { color: #79c0ff; }
   font-size: 0.85rem;
   line-height: 1.5;
 }
+
+/* --- Pixel loaders -----------------------------------------------------
+   Shown in place of a card's body while --serve is still fetching/generating
+   it (cli.py's progressive build re-renders the page as each section lands).
+   Scoped entirely to .loader* -- a "pixel" accent on top of this file's own
+   palette, not a reskin of the rest of the dashboard. (A fuller pixel-style
+   pass across the whole dashboard is tracked for later, once the functional
+   async-render pieces are solid.)
+   Pure CSS/HTML: no JS, so the chase-bar loader shows static status text
+   instead of a live elapsed timer. */
+@font-face {
+  font-family: "Silkscreen";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/silkscreen/v6/m8JXjfVPf62XiF7kO-i9YL1la1OD.woff2) format("woff2");
+}
+
+.card.pending { opacity: 0.9; }
+
+.loader {
+  --px: #58a6ff;
+  font-family: "Silkscreen", monospace;
+}
+
+.loader-inner {
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.loader-caption {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  color: var(--px);
+}
+
+/* Generic "still loading" placeholder, used by any pending/lagging card */
+.loader-sk {
+  width: 100%;
+  background-color: #21262d;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(13, 17, 23, .4) 0 2px, transparent 2px 8px),
+    linear-gradient(90deg, transparent 0 42%, color-mix(in srgb, var(--px) 32%, #21262d) 42% 58%, transparent 58% 100%);
+  background-size: auto, 300% 100%;
+  background-repeat: repeat, no-repeat;
+  border-radius: 3px;
+  animation: loader-sk-sweep var(--dur) steps(12) infinite;
+}
+@keyframes loader-sk-sweep {
+  from { background-position: 0 0, 100% 0; }
+  to { background-position: 0 0, 0 0; }
+}
+
+/* Bitbot thinking -- one of the three LLM-wait animations */
+.loader-bb-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  width: 108px;
+  animation: loader-bb-bob var(--dur) steps(1) infinite;
+}
+.loader-bb-grid .c { width: 9px; height: 9px; }
+.loader-bb-grid .k-o { background: #5b6680; }
+.loader-bb-grid .k-b { background: #c9d1d9; }
+.loader-bb-grid .k-s { background: #0d1117; }
+.loader-bb-grid .k-e { background: var(--px); animation: loader-bb-blink 3.2s steps(1) infinite; }
+.loader-bb-grid .k-m {
+  background: color-mix(in srgb, var(--px) 55%, #0d1117);
+  animation: loader-bb-talk var(--dur) steps(1) infinite;
+}
+@keyframes loader-bb-bob { 0% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes loader-bb-blink { 0% { background: var(--px); } 92% { background: #0d1117; } 97% { background: var(--px); } }
+@keyframes loader-bb-talk { 0% { opacity: 1; } 50% { opacity: .25; } }
+.loader-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-top: 4px;
+  background: var(--px);
+  animation: loader-dot calc(var(--dur) * 1.5) steps(1) infinite;
+}
+.loader-dot2 { animation-delay: calc(var(--dur) * .25); }
+.loader-dot3 { animation-delay: calc(var(--dur) * .5); }
+@keyframes loader-dot { 0% { opacity: .2; } 33% { opacity: 1; } 66% { opacity: .2; } }
+
+/* Pixel dissolve -- one of the three LLM-wait animations */
+.loader-dz {
+  display: grid;
+  grid-template-columns: repeat(24, minmax(0, 1fr));
+  grid-template-rows: repeat(12, minmax(0, 1fr));
+  gap: 2px;
+  width: 100%;
+  height: 90px;
+}
+.loader-dz .t {
+  background: var(--px);
+  opacity: .07;
+  /* Longhand, not the `animation` shorthand -- the shorthand implicitly resets
+     animation-delay to 0s for every property it doesn't mention, which (since
+     this selector is more specific than .d0-.d15 below) would silently win
+     over their stagger delays and make every cell flash in lockstep. */
+  animation-name: loader-dz-ripple;
+  animation-duration: var(--dur);
+  animation-timing-function: steps(1);
+  animation-iteration-count: infinite;
+}
+@keyframes loader-dz-ripple {
+  0% { opacity: .07; } 8% { opacity: 1; } 16% { opacity: .55; }
+  24% { opacity: .25; } 32% { opacity: .12; } 40%, 100% { opacity: .07; }
+}
+
+/* Chase bar -- one of the three LLM-wait animations (static caption, no JS timer) */
+.loader-ch-label { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; letter-spacing: 2px; color: var(--px); }
+.loader-caret {
+  display: inline-block;
+  width: 8px;
+  height: 13px;
+  background: var(--px);
+  animation: loader-ch-blink 1s steps(1) infinite;
+}
+@keyframes loader-ch-blink { 0% { opacity: 1; } 50% { opacity: 0; } }
+.loader-ch-bar {
+  display: grid;
+  grid-template-columns: repeat(16, minmax(0, 1fr));
+  gap: 3px;
+  width: 100%;
+  height: 20px;
+  padding: 4px;
+  border: 1px solid #30363d;
+  border-radius: 3px;
+  background: #0d1117;
+}
+.loader-ch-bar .seg {
+  background: #21262d;
+  /* Same longhand-not-shorthand reasoning as .loader-dz .t above. */
+  animation-name: loader-ch-run;
+  animation-duration: var(--dur);
+  animation-timing-function: steps(1);
+  animation-iteration-count: infinite;
+}
+@keyframes loader-ch-run {
+  0% { background: var(--px); }
+  10% { background: color-mix(in srgb, var(--px) 60%, #21262d); }
+  20% { background: color-mix(in srgb, var(--px) 30%, #21262d); }
+  30%, 100% { background: #21262d; }
+}
+
+/* Shared stagger delays for the 16-cell dissolve grid / chase bar (fraction
+   of each animation's own --dur, same trick as the LLM-wait loaders above). */
+.d0 { animation-delay: 0s; } .d1 { animation-delay: calc(var(--dur) * -.9375); }
+.d2 { animation-delay: calc(var(--dur) * -.875); } .d3 { animation-delay: calc(var(--dur) * -.8125); }
+.d4 { animation-delay: calc(var(--dur) * -.75); } .d5 { animation-delay: calc(var(--dur) * -.6875); }
+.d6 { animation-delay: calc(var(--dur) * -.625); } .d7 { animation-delay: calc(var(--dur) * -.5625); }
+.d8 { animation-delay: calc(var(--dur) * -.5); } .d9 { animation-delay: calc(var(--dur) * -.4375); }
+.d10 { animation-delay: calc(var(--dur) * -.375); } .d11 { animation-delay: calc(var(--dur) * -.3125); }
+.d12 { animation-delay: calc(var(--dur) * -.25); } .d13 { animation-delay: calc(var(--dur) * -.1875); }
+.d14 { animation-delay: calc(var(--dur) * -.125); } .d15 { animation-delay: calc(var(--dur) * -.0625); }
+
+@media (prefers-reduced-motion: reduce) {
+  .loader-sk, .loader-bb-grid, .loader-bb-grid .k-e, .loader-bb-grid .k-m,
+  .loader-dot, .loader-dz .t, .loader-ch-bar .seg, .loader-caret {
+    animation-duration: 6s;
+  }
+}

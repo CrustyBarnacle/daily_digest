@@ -75,3 +75,9 @@ FETCH_TIMEOUT = 10
 DIGEST_MD = DATA_DIR / "digest.md"
 DIGEST_HTML = DATA_DIR / "digest.html"
 DIGEST_CSS = DATA_DIR / "digest.css"
+# Hash of whatever we last wrote to DIGEST_CSS -- bookkeeping, not generated
+# output, so (like credentials/tokens/cached JSON) it lives in STATE_DIR
+# rather than alongside the digest itself. Lets cli.py tell "untouched since
+# we seeded it, safe to refresh with a newer shipped default" apart from
+# "hand-edited, leave it alone".
+DIGEST_CSS_SEED_HASH = STATE_DIR / "digest_css.seeded-sha256"
