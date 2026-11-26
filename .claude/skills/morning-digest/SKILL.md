@@ -27,7 +27,7 @@ connector is required to run it.
 4. Report where the files landed and surface any fetch warnings printed to
    stderr (dead feed, Lemonade unreachable, weather command missing, etc.).
 
-## Roadmap (v2.0)
+## Roadmap (v2.1)
 
 MCP-based Gmail/Calendar (using Claude's connectors instead of direct OAuth)
 is a planned alternate backend, not yet implemented — current priority is

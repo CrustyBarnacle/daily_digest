@@ -109,7 +109,7 @@ directory.
 
 ## Roadmap
 
-- **v2.0**: optional MCP-based backend for Gmail/Calendar (useful inside a
+- **v2.1**: optional MCP-based backend for Gmail/Calendar (useful inside a
   Claude Code session without local OAuth setup) as an alternative to the
   direct-API path above.
 - **Style**: a full pixel-retro reskin of the whole dashboard, matching the
