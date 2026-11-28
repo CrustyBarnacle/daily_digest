@@ -81,3 +81,10 @@ DIGEST_CSS = DATA_DIR / "digest.css"
 # we seeded it, safe to refresh with a newer shipped default" apart from
 # "hand-edited, leave it alone".
 DIGEST_CSS_SEED_HASH = STATE_DIR / "digest_css.seeded-sha256"
+
+# --- LLM briefing prompt ---
+# User-editable, same "seed once, refresh only if untouched" treatment as
+# DIGEST_CSS above -- lives in STATE_DIR (it's input/config, not generated
+# output) alongside its own hash stamp.
+BRIEFING_PROMPT = STATE_DIR / "briefing_prompt.txt"
+BRIEFING_PROMPT_SEED_HASH = STATE_DIR / "briefing_prompt.seeded-sha256"

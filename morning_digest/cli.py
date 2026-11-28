@@ -58,44 +58,52 @@ def _sha256(path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _sync_default_css() -> None:
-    """Keep DIGEST_CSS in sync with the shipped default, without ever
-    clobbering a hand-edited stylesheet:
+def _sync_tracked_file(default_path, deployed_path, stamp_file, label: str) -> None:
+    """Keep a deployed, user-editable file (digest.css, briefing_prompt.txt)
+    in sync with its shipped default, without ever clobbering a hand-edited
+    copy:
 
     - doesn't exist yet -> seed it, stamp its hash.
     - matches the stamp (untouched since we last wrote it) and the shipped
-      default has since changed (e.g. this update's loader styles) -> refresh
-      it, update the stamp.
+      default has since changed (e.g. new loader styles, a reworded prompt)
+      -> refresh it, update the stamp.
     - anything else -- no stamp yet (predates this tracking) or it doesn't
       match -- assume it's been hand-edited and leave it alone.
     """
-    default_hash = _sha256(render.DEFAULT_STYLE_PATH)
-    stamp_file = config.DIGEST_CSS_SEED_HASH
+    default_hash = _sha256(default_path)
 
-    if not config.DIGEST_CSS.exists():
-        shutil.copyfile(render.DEFAULT_STYLE_PATH, config.DIGEST_CSS)
+    if not deployed_path.exists():
+        shutil.copyfile(default_path, deployed_path)
         stamp_file.write_text(default_hash)
         return
 
-    current_hash = _sha256(config.DIGEST_CSS)
+    current_hash = _sha256(deployed_path)
     if current_hash == default_hash:
         if not stamp_file.exists():
             stamp_file.write_text(default_hash)
         return
 
     if stamp_file.exists() and stamp_file.read_text().strip() == current_hash:
-        shutil.copyfile(render.DEFAULT_STYLE_PATH, config.DIGEST_CSS)
+        shutil.copyfile(default_path, deployed_path)
         stamp_file.write_text(default_hash)
         return
 
     if not stamp_file.exists():
         print(
-            f"note: {config.DIGEST_CSS} predates digest.css update-tracking and "
+            f"note: {deployed_path} predates {label} update-tracking and "
             "differs from the shipped default -- if you haven't hand-edited it, "
-            "delete it (or re-copy it from morning_digest/static/digest.css) once "
-            "to pick up style changes; future updates will then apply automatically.",
+            f"delete it (or re-copy it from {default_path}) once "
+            "to pick up changes; future updates will then apply automatically.",
             file=sys.stderr,
         )
+
+
+def _sync_default_css() -> None:
+    _sync_tracked_file(render.DEFAULT_STYLE_PATH, config.DIGEST_CSS, config.DIGEST_CSS_SEED_HASH, "digest.css")
+
+
+def _sync_briefing_prompt() -> None:
+    _sync_tracked_file(news.DEFAULT_PROMPT_PATH, config.BRIEFING_PROMPT, config.BRIEFING_PROMPT_SEED_HASH, "briefing_prompt.txt")
 
 
 def _write_digest_html(sections: dict, pending: set, briefing_loader: str) -> None:
@@ -190,6 +198,7 @@ def main(argv=None) -> int:
     config.STATE_DIR.mkdir(parents=True, exist_ok=True)
     config.DATA_DIR.mkdir(parents=True, exist_ok=True)
     _sync_default_css()
+    _sync_briefing_prompt()
     briefing_loader = random.choice(render.LLM_WAIT_LOADERS)
 
     if args.serve:

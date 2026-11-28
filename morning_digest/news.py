@@ -4,11 +4,18 @@ import urllib.request
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from email.utils import parsedate_to_datetime
+from pathlib import Path
 
 from . import config
 
 ATOM_NS = "{http://www.w3.org/2005/Atom}"
 _TAG_RE = re.compile(r"<[^>]+>")
+
+# Shipped default for config.BRIEFING_PROMPT, deployed/kept-in-sync by
+# cli.py's _sync_briefing_prompt() the same way render.DEFAULT_STYLE_PATH is
+# for digest.css -- lets the briefing's instructions be viewed/edited without
+# touching this module.
+DEFAULT_PROMPT_PATH = Path(__file__).resolve().parent / "static" / "briefing_prompt.txt"
 
 
 def _clean_description(raw: str, limit: int = 300) -> str:
@@ -86,8 +93,10 @@ def fetch_all(feeds=None, limit=None, timeout=None) -> list:
 
 
 def llm_briefing(headlines) -> str:
-    """One-paragraph 'what matters today' summary via the local LLM. Best-effort:
-    falls back to no briefing if Lemonade is unreachable."""
+    """'What matters today' summary via the local LLM, built from the
+    user-editable template at config.BRIEFING_PROMPT (falls back to the
+    shipped default if it isn't deployed yet). Best-effort: falls back to no
+    briefing if Lemonade is unreachable."""
     from . import llm_client
 
     if not headlines:
@@ -98,19 +107,12 @@ def llm_briefing(headlines) -> str:
     )
     if not entries:
         return ""
-    result = llm_client.chat(
-        entries,
-        system=(
-            "You are a cybersecurity news briefer. Each line below is a headline, "
-            "optionally followed by ' :: ' and a short snippet from that article -- "
-            "use the snippet (when present) to get attribution and relationships right "
-            "instead of guessing from the headline wording alone. Write a 2-3 sentence "
-            "plain-English summary of what's most worth knowing today. Stick to what's "
-            "stated; don't speculate beyond it. No preamble, no markdown. End on a "
-            "complete sentence."
-        ),
-        max_tokens=280,
-    )
+
+    template_path = config.BRIEFING_PROMPT if config.BRIEFING_PROMPT.exists() else DEFAULT_PROMPT_PATH
+    template = template_path.read_text(encoding="utf-8")
+    prompt = template.format(text=entries)
+
+    result = llm_client.chat(prompt, max_tokens=280)
     if result.startswith("(local LLM unavailable"):
         return ""
     return result
